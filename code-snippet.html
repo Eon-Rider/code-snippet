@@ -1,0 +1,116 @@
+<!--
+@license
+Copyright (c) 2015 Kenny Qin. All rights reserved.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<!--
+An element that allows displaying of code snippets.
+
+Example:
+
+    <code-snippet></code-snippet>
+
+@demo
+-->
+<dom-module id="code-snippet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+
+    li {
+            font-family:consolas;
+            border-left:1px solid #000000;
+    }
+        
+    ol.lined {
+        list-style-type: decimal;
+        list-style-position: outside;
+    }
+    
+    ol.not-lined {
+        list-style-type: none;
+    }
+    
+    #widget-container {
+        border: 1px solid #000000;
+        overflow-x: scroll;
+    }
+    
+    #copy {
+        float:right;
+    }
+  </style>
+
+  <template>
+    <div id="widget-container" style$="{{getContainerWidth(width)}}">
+        <div><button id="copy" on-click="selectText">Copy</button></div>
+        <iron-ajax auto url="{{source}}" handle-as="json" last-response="{{content}}"></iron-ajax>
+        <ol id="lines" class$="{{getListStyle(lnOn)}}">
+        <template is="dom-repeat" items="{{content}}" as="line">
+            <li>{{line.text}}</li>
+        </template>
+        </ol>
+    </div>
+  </template>
+
+</dom-module>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script>
+
+  Polymer({
+
+    is: 'code-snippet',
+
+    properties: {
+        source: {
+            type: String,
+            value: ''
+        },
+        width: {
+            type: Number,
+            value: 80
+        },
+        lnOn: {
+            type: Boolean,
+            value: false
+        }
+    },
+    listeners: {
+        'copy.tap': 'selectText'
+    },
+    ready: function () {
+      
+    },
+    selectText: function(e) {
+        //alert("selecting text");
+        if (document.selection) {
+            var range = document.body.createTextRange();
+            range.moveToElementText(document.getElementById("lines"));
+            range.select();
+        } else if (window.getSelection) {
+            var range = document.createRange();
+            range.selectNode(document.getElementById("lines"));
+            window.getSelection().addRange(range);
+        }
+    },
+    getContainerWidth: function(width) {
+        return "width:" + width + "%";
+    },
+    getListStyle: function(lnOn) {
+        if (lnOn) {
+            return "lined";
+        } else {
+            return "not-lined";
+        }
+    }
+
+  });
+
+</script>
