@@ -4,6 +4,11 @@ Copyright (c) 2015 Kenny Qin. All rights reserved.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
 
 <!--
 An element that allows displaying of code snippets.
@@ -15,7 +20,6 @@ Example:
 @demo
 -->
 <dom-module id="code-snippet">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
   <style>
     :host {
@@ -25,7 +29,7 @@ Example:
 
     li {
             font-family:consolas;
-            border-left:1px solid #000000;
+            border-left:1px solid #d3d3d3;
     }
         
     ol.lined {
@@ -38,30 +42,54 @@ Example:
     }
     
     #widget-container {
-        border: 1px solid #000000;
         overflow-x: scroll;
     }
     
     #copy {
         float:right;
     }
+    
+    paper-menu {
+      display: block;
+    }
+    
+    paper-dropdown-menu {
+      text-align: left;
+      margin: auto;
+      width: 180px;
+    }
+    paper-dropdown-menu.letters {
+      width: 90px;
+    }
+    paper-tabs {
+      width: 400px;
+    }
   </style>
 
   <template>
-    <div id="widget-container" style$="{{getContainerWidth(width)}}">
-        <div><button id="copy" on-click="selectText">Copy</button></div>
-        <iron-ajax auto url="{{source}}" handle-as="json" last-response="{{content}}"></iron-ajax>
+  <iron-ajax auto url="{{source}}" handle-as="json" on-response="handleResponse"></iron-ajax>
+  <paper-card style$="{{getContainerWidth(width)}}">
+    <div id="widget-container">
+    <paper-dropdown-menu label="Language" on-iron-select="_itemSelected">
+  <paper-menu class="dropdown-content" selected="0">
+  <template is="dom-repeat" items="{{data}}">
+    <paper-item>{{item.language}}</paper-item>
+  </template>
+  </paper-menu>
+</paper-dropdown-menu>
+
+        <div><paper-button id="copy" on-click="selectText">Copy</paper-button></div>
         <ol id="lines" class$="{{getListStyle(lnOn)}}">
-        <template is="dom-repeat" items="{{content}}" as="line">
-            <li>{{line.text}}</li>
+        <template id="code" is="dom-repeat" items="{{currCode}}" as="line">
+            <li>{{line}}</li>
         </template>
         </ol>
     </div>
+    </paper-card>
   </template>
 
 </dom-module>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script>
 
   Polymer({
@@ -80,13 +108,25 @@ Example:
         lnOn: {
             type: Boolean,
             value: false
+        },
+        lang: {
+            type: String,
+            value: '',
+            observer: 'refreshCode'
+        },
+        currCode: {
+            type: Array
+        },
+        data: {
+            type: Array
         }
+        
     },
     listeners: {
         'copy.tap': 'selectText'
     },
     ready: function () {
-      
+    
     },
     selectText: function(e) {
         //alert("selecting text");
@@ -109,8 +149,31 @@ Example:
         } else {
             return "not-lined";
         }
+    },
+    handleResponse: function(response) {
+        var json = JSON.parse(response.detail.response.data)
+        //console.log(json)
+        
+        this.data = json.data
+        console.log("response handled")
+        console.log(this.data)
+    },
+    _itemSelected: function(e,detail) {
+      var selectedItem = e.target.selectedItem;
+      if (selectedItem) {
+      for (i = 0; i < this.data.length; i++) {
+          if (selectedItem.innerText.trim() == this.data[i].language) {
+              this.currCode = this.data[i].code.split("\r\n")
+          } else {
+              this.currCode = this.data[0].code.split("\r\n")
+          }
+      }
+      this.lang = selectedItem.innerText;
+      }
+    },
+    refreshCode: function(data) {
+        this.$.code.render();
     }
-
   });
 
 </script>
