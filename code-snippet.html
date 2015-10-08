@@ -8,6 +8,7 @@ Copyright (c) 2015 Kenny Qin. All rights reserved.
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../paper-card/paper-card.html">
 
 <!--
@@ -78,7 +79,10 @@ Example:
   </paper-menu>
 </paper-dropdown-menu>
 
-        <div><paper-button id="copy" on-click="selectText">Copy</paper-button></div>
+        <div class="with-tooltip">
+        <paper-button id="copy" on-click="selectText">Copy</paper-button>
+        <paper-tooltip>Tap then Ctrl+v!</paper-tooltip>
+        </div>
         <ol id="lines" class$="{{getListStyle(lnOn)}}">
         <template id="code" is="dom-repeat" items="{{currCode}}" as="line">
             <li>{{line}}</li>
@@ -162,13 +166,13 @@ Example:
       var selectedItem = e.target.selectedItem;
       if (selectedItem) {
       for (i = 0; i < this.data.length; i++) {
-          if (selectedItem.innerText.trim() == this.data[i].language) {
+          if (selectedItem.textContent.trim() == this.data[i].language) {
               this.currCode = this.data[i].code.split("\r\n")
           } else {
               this.currCode = this.data[0].code.split("\r\n")
           }
       }
-      this.lang = selectedItem.innerText;
+      this.lang = selectedItem.textContent.trim();
       }
     },
     refreshCode: function(data) {
